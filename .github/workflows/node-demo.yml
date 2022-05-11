@@ -26,8 +26,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-
-    - name: Clone Project         
+     
     - run: |
        sudo apt update -y && sudo apt install sqlite3 -y  
        git clone https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management               
