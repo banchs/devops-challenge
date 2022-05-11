@@ -15,6 +15,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Clone Project
-      run: git clone https://github.com/timeoff-management/timeoff-management-application.git .
+      run: git clone https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      run: cd  $PWD/timeoff-management && docker build . --file Dockerfile --tag my-image-name:$(date +%s)
