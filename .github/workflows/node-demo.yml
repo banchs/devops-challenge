@@ -37,11 +37,13 @@ jobs:
       run: |
        cd  timeoff-management-application
        npm install --omit=dev
-       npm audit fix --force
-       npm run build --if-present
-
-    - name: Show Tree
-      run: apt install tree -y && tree
+             
+    - name: Make Audit Packages
+      run:  npm audit fix --force
+   # - name: Show Tree
+   #   run: apt install tree -y && tree
+    - name: Make Build
+      run:  npm run build --if-present
 
     - name: Make Test
       run:  ls -lta && cd timeoff-management-application &&  npm test      
