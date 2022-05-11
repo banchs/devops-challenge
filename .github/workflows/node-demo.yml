@@ -41,5 +41,5 @@ jobs:
        npm run build --if-present
 
     - name: Make Test
-    - run: npm test
+      run: npm test
 
