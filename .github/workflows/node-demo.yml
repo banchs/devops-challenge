@@ -12,20 +12,31 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: alpine:latest
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x]
+        node-version: [6.x, 12.x, 14.x, 16.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
+    - name: Update and Install sqlite3
+      run: sudo apt update -y && sudo apt install sqlite3 -y
+    
+    - name: Git Checkout          
     - uses: actions/checkout@v3
+    
+    - name: Clone Project
+      run: git clone https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+                
+    - run: cd  $PWD/timeoff-management 
     - run: npm ci
+    - name: Clone Project    
     - run: npm run build --if-present
     - run: npm test
