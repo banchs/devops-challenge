@@ -35,7 +35,8 @@ jobs:
      
     - run: |
        ls -lta
-       cd  timeoff-management-application 
+       cd  timeoff-management-application
+       npm install --omit=dev
        npm run build --if-present
        npm test
 
