@@ -39,7 +39,7 @@ jobs:
        npm install --omit=dev
              
     - name: Make Audit Packages
-      run:  npm audit fix --force
+      run:  cd  timeoff-management-application && npm audit fix --force
    # - name: Show Tree
    #   run: apt install tree -y && tree
     - name: Make Build
