@@ -20,16 +20,18 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
+    - uses: actions/checkout@v3
     - run: |
        sudo apt update -y && sudo apt install sqlite3 -y  
-       git clone https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management               
-       cd  $PWD/timeoff-management    
-    - uses: actions/checkout@v3
+       git clone https://github.com/timeoff-management/timeoff-management-application.git timeoff-management               
+       cd  timeoff-management    
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+        cache-dependency-path: timeoff-management/package-lock.json
      
     - run: |
        npm run build --if-present
