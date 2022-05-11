@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+    - name: Update and Install sqlite3
+      run: sudo update -y && sudo apt install sqlite3 -y  
     - uses: actions/checkout@v3
     - name: Clone Project
       run: git clone https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management
