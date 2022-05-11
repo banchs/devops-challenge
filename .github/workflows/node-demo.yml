@@ -24,7 +24,7 @@ jobs:
     - run: |
        sudo apt update -y && sudo apt install sqlite3 -y  
        git clone https://github.com/timeoff-management/timeoff-management-application.git               
-       cd  timeoff-management-application 
+       
 
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
@@ -34,6 +34,8 @@ jobs:
         cache-dependency-path: timeoff-management-application/package-lock.json
      
     - run: |
+       ls -lta
+       cd  timeoff-management-application 
        npm run build --if-present
        npm test
 
