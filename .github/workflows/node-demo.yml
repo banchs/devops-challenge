@@ -21,22 +21,22 @@ jobs:
 
     steps:
     - name: Update and Install sqlite3
-      run: sudo apt update -y && sudo apt install sqlite3 -y
-    
-    - name: Git Checkout          
-    - uses: actions/checkout@v3
-    
-    - name: Clone Project
-      run: git clone https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management
+      run: sudo apt update -y && sudo apt install sqlite3 -y  
 
+  
+    - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-                
+    
+    - name: Clone Project
+      run: git clone https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management               
     - run: cd  $PWD/timeoff-management 
     - run: npm ci
     - name: Clone Project    
-    - run: npm run build --if-present
-    - run: npm test
+    - run: |
+       npm run build --if-present
+       npm test
+
