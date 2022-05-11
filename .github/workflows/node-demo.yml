@@ -43,8 +43,8 @@ jobs:
    # - name: Show Tree
    #   run: apt install tree -y && tree
     - name: Make Build
-      run:  npm run build --if-present
+      run: cd  timeoff-management-application && npm run build --if-present
 
     - name: Make Test
-      run:  ls -lta && cd timeoff-management-application &&  npm test      
+      run:  cd timeoff-management-application &&  npm test      
 
