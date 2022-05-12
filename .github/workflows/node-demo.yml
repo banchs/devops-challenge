@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [13.x, 14.x]
+        node-version: [10.x, 13.x, 14.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -36,6 +36,7 @@ jobs:
     - name: Install Node.js ${{ matrix.node-version }}     
       run: |
        cd  timeoff-management-application
+       rm -rf .npmrc
        npm install --omit=dev
              
     - name: Make Audit Packages
