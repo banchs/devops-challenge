@@ -42,11 +42,11 @@ jobs:
       run:  cd  timeoff-management-application && npm audit fix --force
    # - name: Show Tree
    #   run: apt install tree -y && tree
-    - name: Make Build
-      run: cd  timeoff-management-application && npm run build --if-present
+   # - name: Make Build
+   #   run: cd  timeoff-management-application && npm run build --if-present
 
-    - name: Make Test
-      run:  cd timeoff-management-application &&  npm run db-update
+    - name: DB Update
+      run:  cd timeoff-management-application && npm run-script db-update
       
     - name: Make Test
       run:  cd timeoff-management-application &&  npm test      
