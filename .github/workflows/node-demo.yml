@@ -37,17 +37,29 @@ jobs:
       run: |
        cd  timeoff-management-application
        rm -rf .npmrc
-       npm install --omit=dev
+       npm install 
+       #--omit=dev
              
-    - name: Make Audit Packages
-      run:  cd  timeoff-management-application && npm audit fix --force
    # - name: Show Tree
    #   run: apt install tree -y && tree
    # - name: Make Build
    #   run: cd  timeoff-management-application && npm run build --if-present
+    - name: DB Install Driver
+      run: | 
+       cd  timeoff-management-application 
+       npm ci
+       npm audit fix --force
+       wget https://chromedriver.storage.googleapis.com/77.0.3865.40/chromedriver_linux64.zip
+       cd bin; unzip ../chromedriver_linux64.zip; cd ../
+       export PATH=$PWD/bin:$PATH
+       node bin/wwww > /dev/null 2>&1 &
+       node node_modules/mocha/bin/mocha --recursive t
 
     - name: DB Update
-      run:  cd timeoff-management-application && npm run-script db-update
+      run: |
+       cd timeoff-management-application
+       sudo apt update -y && sudo apt install sqlite3 -y   
+       npm run-script db-update
       
     - name: Make Test
       run:  cd timeoff-management-application &&  npm test      
