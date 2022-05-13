@@ -28,7 +28,7 @@ jobs:
 
   deploy:
     needs: [test]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+   # if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -75,9 +75,9 @@ jobs:
           echo "::set-output name=token::${token}"
           echo "::set-output name=host::${host}"
           echo "::set-output name=cert::${cert}"
-          sed -i 's/\${IMAGE_TAG}/'"$GITHUB_SHA"'/g' k8s/deployment.yml
+          sed -i 's/\${IMAGE_TAG}/'"$GITHUB_SHA"'/g' k8s/dev/deployment.yml
           VERSION=$(cat package.json | jq  .version)
-          sed -i 's/\${RELEASE_VERSION}/'"$VERSION"'/g' k8s/deployment.yml
+          sed -i 's/\${RELEASE_VERSION}/'"$VERSION"'/g' k8s/dev/deployment.yml
 
       - name: Run Kubectl apply
         uses: actions-hub/kubectl@master
