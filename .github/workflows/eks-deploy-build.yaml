@@ -1,0 +1,92 @@
+name: 'CD/CI Build timeoff-managment Application EKS'
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'k8s/**'      
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'k8s/**'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: k8s/develop
+    steps:
+    - uses: actions/checkout@v3
+    - name: Clone Project && Build the Docker image
+      run: |
+       git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management       
+       cd  $PWD/timeoff-management 
+       sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile 
+       docker build --no-cache --progress=plain --tag demo-timeoff:latest .
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: k8s/dev
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 10
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: demo-timeoff
+          IMAGE_TAG: ${{ github.sha }}
+      - name: Clone Project && Build the Docker image
+        run: |
+         git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management       
+         cd  $PWD/timeoff-management 
+         sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile 
+         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: EKS Auth
+        id: set-eks-auth
+        run: |
+          token=$(aws eks get-token --cluster-name demo-dev --region us-east-1 | jq -r .status.token)
+          host=$(aws eks describe-cluster --name demo-dev | jq -r .cluster.endpoint | cut -c 9- )
+          cert=$(aws eks describe-cluster --name demo-dev | jq -r .cluster.certificateAuthority.data)
+          echo "::add-mask::$token"
+          echo "::add-mask::$host"
+          echo "::add-mask::$cert"
+          echo "::set-output name=token::${token}"
+          echo "::set-output name=host::${host}"
+          echo "::set-output name=cert::${cert}"
+          sed -i 's/\${IMAGE_TAG}/'"$GITHUB_SHA"'/g' k8s/deployment.yml
+          VERSION=$(cat package.json | jq  .version)
+          sed -i 's/\${RELEASE_VERSION}/'"$VERSION"'/g' k8s/deployment.yml
+
+      - name: Run Kubectl apply
+        uses: actions-hub/kubectl@master
+        env:
+          KUBE_TOKEN: ${{ steps.set-eks-auth.outputs.token }}
+          KUBE_HOST: ${{ steps.set-eks-auth.outputs.host }}
+          KUBE_CERTIFICATE: ${{ steps.set-eks-auth.outputs.cert }}
+        with:
+          args: apply
+            --namespace=default
+            -f k8s/dev/service.yml
+            -f k8s/dev/deployment.yml
