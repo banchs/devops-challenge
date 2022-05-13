@@ -29,7 +29,9 @@ jobs:
       - uses: actions/checkout@v3
       - name: Clone Repo Node.js ${{ matrix.node-version }}     
         run: |
-         git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git timeoff-management             
+         git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git timeoff-management
+         cd timeoff-management
+         sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
@@ -39,8 +41,8 @@ jobs:
     
       - name: Install Node.js ${{ matrix.node-version }}     
         run: |     
-         cd  $PWD/timeoff-management 
-         sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile 
+         cd  $PWD/timeoff-management    
+         sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile       
          #docker build --no-cache --progress=plain --tag demo-timeoff:latest .
          npm install --omit=dev
              
