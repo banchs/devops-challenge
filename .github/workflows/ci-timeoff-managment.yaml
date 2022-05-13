@@ -27,6 +27,8 @@ jobs:
       USE_CHROME: 1        
     steps:
       - uses: actions/checkout@v3
+      - run: |
+         apt update -y && apt install sqlite3 -y        
       - name: Clone Repo Node.js ${{ matrix.node-version }}     
         run: |
          git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git timeoff-management
