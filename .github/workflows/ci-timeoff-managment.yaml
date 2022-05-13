@@ -16,7 +16,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: k8s/develop
+        working-directory: k8s/dev
     steps:
       - uses: actions/checkout@v3
       - name: Clone Project && Build the Docker image
