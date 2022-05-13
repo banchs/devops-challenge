@@ -46,27 +46,28 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: us-east-1
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+      #- name: Login to Amazon ECR
+      #  id: login-ecr
+      #  uses: aws-actions/amazon-ecr-login@v1
 
-      - name:  Clone Project, Build and Push image to Amazon ECR
-        id: build
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: demo-timeoff
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management       
-          cd  $PWD/timeoff-management 
-          sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile 
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      #- name:  Clone Project, Build and Push image to Amazon ECR
+      #  id: build
+      #  env:
+      #    ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      #    ECR_REPOSITORY: demo-timeoff
+      #    IMAGE_TAG: ${{ github.sha }}
+      #  run: |
+      #    git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management       
+      #    cd  $PWD/timeoff-management 
+      #    sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile 
+      #    docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+      #    docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: EKS Auth
         id: set-eks-auth
         run: |
           token=$(aws eks get-token --cluster-name demo-dev --region us-east-1 | jq -r .status.token)
+          echo $token "-------------------- THIS IS MY TOKEN \n\n\n\n\n\n"
           host=$(aws eks describe-cluster --name demo-dev | jq -r .cluster.endpoint | cut -c 9- )
           cert=$(aws eks describe-cluster --name demo-dev | jq -r .cluster.certificateAuthority.data)
           echo "::add-mask::$token"
