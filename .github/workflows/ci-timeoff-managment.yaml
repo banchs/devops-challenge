@@ -27,12 +27,15 @@ jobs:
       USE_CHROME: 1        
     steps:
       - uses: actions/checkout@v3
+      - name: Clone Repo Node.js ${{ matrix.node-version }}     
+        run: |
+         git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management             
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          #cache-dependency-path: timeoff-management/package-lock.json
+          cache-dependency-path: timeoff-management/package-lock.json
     
       - name: Install Node.js ${{ matrix.node-version }}     
         run: |
