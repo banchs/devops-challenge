@@ -77,7 +77,8 @@ jobs:
           echo "::set-output name=host::${host}"
           echo "::set-output name=cert::${cert}"
           sed -i 's/\${IMAGE_TAG}/'"$GITHUB_SHA"'/g' deployment.yml
-          VERSION=$(cat $PWD/timeoff-management/package.json | jq  .version)
+          VERSION=$GITHUB_SHA
+          #$(cat $PWD/timeoff-management/package.json | jq  .version)
           sed -i 's/\${RELEASE_VERSION}/'"$VERSION"'/g' deployment.yml
 
       - name: Run Kubectl apply
