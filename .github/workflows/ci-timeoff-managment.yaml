@@ -78,12 +78,13 @@ jobs:
           sed -i 's/\${IMAGE_TAG}/'"$GITHUB_SHA"'/g' deployment.yml
           VERSION=$(cat $PWD/timeoff-management/package.json | jq  .version)
           sed -i 's/\${RELEASE_VERSION}/'"$VERSION"'/g' deployment.yml
-          apt-get update -y
-          apt-get install awscli -y
+
       - name: Run Kubectl apply
         uses: actions-hub/kubectl@master
         env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+          KUBE_TOKEN: ${{ steps.set-eks-auth.outputs.token }}
+          KUBE_HOST: ${{ steps.set-eks-auth.outputs.host }}
+          KUBE_CERTIFICATE: ${{ steps.set-eks-auth.outputs.cert }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
         with:
