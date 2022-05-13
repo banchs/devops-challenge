@@ -75,8 +75,6 @@ jobs:
           echo "::set-output name=token::${token}"
           echo "::set-output name=host::${host}"
           echo "::set-output name=cert::${cert}"
-          ls -lta 
-          pwd
           sed -i 's/\${IMAGE_TAG}/'"$GITHUB_SHA"'/g' deployment.yml
           VERSION=$(cat $PWD/timeoff-management/package.json | jq  .version)
           sed -i 's/\${RELEASE_VERSION}/'"$VERSION"'/g' deployment.yml
@@ -87,6 +85,8 @@ jobs:
           KUBE_TOKEN: ${{ steps.set-eks-auth.outputs.token }}
           KUBE_HOST: ${{ steps.set-eks-auth.outputs.host }}
           KUBE_CERTIFICATE: ${{ steps.set-eks-auth.outputs.cert }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
         with:
           args: apply
             --namespace=default
