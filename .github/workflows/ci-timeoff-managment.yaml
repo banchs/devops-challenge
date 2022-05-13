@@ -53,9 +53,11 @@ jobs:
          cd  $PWD/timeoff-management  
          npm ci
          npm audit fix --force
-         wget https://chromedriver.storage.googleapis.com/77.0.3865.40/chromedriver_linux64.zip
+         wget https://chromedriver.storage.googleapis.com/94.0.4606.61/chromedriver_linux64.zip 
          cd bin; unzip ../chromedriver_linux64.zip; cd ../
-         export PATH=$PWD/bin:$PATH
+         sudo mv chromedriver /usr/bin/chromedriver 
+         sudo chown root:root /usr/bin/chromedriver 
+         sudo chmod +x /usr/bin/chromedriver 
          node bin/wwww > /dev/null 2>&1 &
          node node_modules/mocha/bin/mocha --recursive t
   deploy:
