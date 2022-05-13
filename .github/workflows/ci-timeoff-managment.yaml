@@ -45,11 +45,14 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-external-id: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
+          role-duration-seconds: 1200
+          role-session-name: "ci-${{ github.actor }}"
 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-
       - name:  Clone Project, Build and Push image to Amazon ECR
         id: build
         env:
@@ -75,9 +78,10 @@ jobs:
           echo "::set-output name=token::${token}"
           echo "::set-output name=host::${host}"
           echo "::set-output name=cert::${cert}"
-          sed -i 's/\${IMAGE_TAG}/'"$GITHUB_SHA"'/g' k8s/dev/deployment.yml
-          VERSION=$(cat package.json | jq  .version)
-          sed -i 's/\${RELEASE_VERSION}/'"$VERSION"'/g' k8s/dev/deployment.yml
+          sed -i 's/\${IMAGE_TAG}/'"$GITHUB_SHA"'/g' deployment.yml
+          VERSION=$GITHUB_SHA
+          #$(cat $PWD/timeoff-management/package.json | jq  .version)
+          sed -i 's/\${RELEASE_VERSION}/'"$VERSION"'/g' deployment.yml
 
       - name: Run Kubectl apply
         uses: actions-hub/kubectl@master
@@ -85,6 +89,8 @@ jobs:
           KUBE_TOKEN: ${{ steps.set-eks-auth.outputs.token }}
           KUBE_HOST: ${{ steps.set-eks-auth.outputs.host }}
           KUBE_CERTIFICATE: ${{ steps.set-eks-auth.outputs.cert }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
         with:
           args: apply
             --namespace=default
