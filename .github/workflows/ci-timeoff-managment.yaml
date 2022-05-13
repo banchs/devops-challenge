@@ -11,23 +11,23 @@ on:
    # paths:
    #   - 'k8s/**'
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-        working-directory: k8s/dev
-    steps:
-      - uses: actions/checkout@v3
-      - name: Clone Project && Build the Docker image
-        run: |
-          git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management       
-          cd  $PWD/timeoff-management 
-          sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile 
-          docker build --no-cache --progress=plain --tag demo-timeoff:latest .
-
+ # test:
+ #   runs-on: ubuntu-latest
+ #   defaults:
+ #     run:
+ #       shell: bash
+ #       working-directory: k8s/dev
+ #   steps:
+ #     - uses: actions/checkout@v3
+ #     - name: Clone Project && Build the Docker image
+ #       run: |
+ #         git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management       
+ #         cd  $PWD/timeoff-management 
+ #         sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile 
+ #         docker build --no-cache --progress=plain --tag demo-timeoff:latest .
+#
   deploy:
-    needs: [test]
+ #   needs: [test]
    # if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     defaults:
@@ -75,9 +75,11 @@ jobs:
           echo "::set-output name=token::${token}"
           echo "::set-output name=host::${host}"
           echo "::set-output name=cert::${cert}"
-          sed -i 's/\${IMAGE_TAG}/'"$GITHUB_SHA"'/g' k8s/dev/deployment.yml
+          ls -lta 
+          pwd
+          sed -i 's/\${IMAGE_TAG}/'"$GITHUB_SHA"'/g' deployment.yml
           VERSION=$(cat package.json | jq  .version)
-          sed -i 's/\${RELEASE_VERSION}/'"$VERSION"'/g' k8s/dev/deployment.yml
+          sed -i 's/\${RELEASE_VERSION}/'"$VERSION"'/g' deployment.yml
 
       - name: Run Kubectl apply
         uses: actions-hub/kubectl@master
