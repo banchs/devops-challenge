@@ -27,6 +27,7 @@ jobs:
           docker build --no-cache --progress=plain --tag demo-timeoff:latest .
 
   deploy:
+    needs: [test]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     defaults:
