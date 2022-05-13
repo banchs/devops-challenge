@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: timeoff-managment
+  name: timeoff-managment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: timeoff-managment
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: timeoff-managment
+    spec:
+      containers:
+      - name: demo-timeoff
+        image: 447335552551.dkr.ecr.us-east-1.amazonaws.com/demo-timeoff:${IMAGE_TAG}
+        env:
+        - name: VERSION
+          value: ${RELEASE_VERSION}
+        ports:
+        - containerPort: 8080
