@@ -35,7 +35,7 @@ jobs:
       name: identify module envs
       run: |
         cd ${{ env.module_name }}
-        envs=$(ls -d *)
+        envs=$( find . -maxdepth 1 -type d -and -not -name 'main' | cut -c 3-)
         module_envs=$(for i in $envs; do echo $i; done | jq -R . | jq -s -c .)
         echo "::set-output name=matrix_envs::${module_envs}"
 
