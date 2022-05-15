@@ -46,7 +46,7 @@ jobs:
          cd  timeoff-management
          rm -rf .npmrc
          #docker build --no-cache --progress=plain --tag demo-timeoff:latest .
-         npm install --omit=dev
+         npm install
 
       - name:  Install ChromeDriver
         run: |
@@ -55,9 +55,10 @@ jobs:
          npm audit fix --force
          wget https://chromedriver.storage.googleapis.com/94.0.4606.61/chromedriver_linux64.zip
          cd bin; unzip ../chromedriver_linux64.zip; cd ../
-         sudo mv chromedriver /usr/bin/chromedriver
-         sudo chown root:root /usr/bin/chromedriver
-         sudo chmod +x /usr/bin/chromedriver
+         export PATH=$PWD/bin:$PATH
+         sudo apt install  phantomjs
+         node bin/wwww > /dev/null 2>&1 &
+         sudo chmod +x bin/chromedriver
          node bin/wwww > /dev/null 2>&1 &
          node node_modules/mocha/bin/mocha --recursive t
   deploy:
