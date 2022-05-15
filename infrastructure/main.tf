@@ -226,7 +226,7 @@ resource "aws_security_group" "rds" {
 }
 
 module "rds" {
-  source               = "github.com/banchs/tf-mod-db//rds?ref=1.0.0"
+  source               = "github.com/banchs/tf-mod-db//rds?ref=1.0.1"
   name                 = var.name
   env                  = var.env
   tags                 = var.tags
