@@ -39,11 +39,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-      #    cache-dependency-path: timeoff-management/package-lock.json
+          cache-dependency-path: timeoff-management/package-lock.json
 
       - name: Install Node.js ${{ matrix.node-version }}
         run: |
-         cd  $PWD/timeoff-management
+         cd  timeoff-management
          rm -rf .npmrc
          #docker build --no-cache --progress=plain --tag demo-timeoff:latest .
          npm install --omit=dev
