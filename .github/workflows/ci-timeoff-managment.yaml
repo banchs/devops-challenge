@@ -45,26 +45,25 @@ jobs:
         run: |
          cd  timeoff-management
          rm -rf .npmrc
-         #docker build --no-cache --progress=plain --tag demo-timeoff:latest .
          npm install
 
-      - name:  Install ChromeDriver
-        run: |
-         cd  $PWD/timeoff-management
-         npm ci
-         npm audit fix --force
-         wget https://chromedriver.storage.googleapis.com/94.0.4606.61/chromedriver_linux64.zip
-         cd bin; unzip ../chromedriver_linux64.zip; cd ../
-         export PATH=$PWD/bin:$PATH
-         sudo apt update -y && sudo apt install sqlite3 -y
-         sudo apt install  phantomjs
-         sudo npm install -g chromedriver
-         sudo npm install -g selenium-webdriver
-         sudo npm install -g mocha
-         node bin/wwww > /dev/null 2>&1 &
-         sudo chmod +x bin/chromedriver
-         node bin/wwww > /dev/null 2>&1 &
-         node node_modules/mocha/bin/mocha --recursive t
+     # - name:  Install ChromeDriver
+     #   run: |
+     #    cd  $PWD/timeoff-management
+     #    npm ci
+     #    npm audit fix --force
+     #    wget https://chromedriver.storage.googleapis.com/94.0.4606.61/chromedriver_linux64.zip
+     #    cd bin; unzip ../chromedriver_linux64.zip; cd ../
+     #    export PATH=$PWD/bin:$PATH
+     #    sudo apt update -y && sudo apt install sqlite3 -y
+     #    sudo apt install  phantomjs
+     #    sudo npm install -g chromedriver
+     #    sudo npm install -g selenium-webdriver
+     #    sudo npm install -g mocha
+     #    node bin/wwww > /dev/null 2>&1 &
+     #    sudo chmod +x bin/chromedriver
+     #    node bin/wwww > /dev/null 2>&1 &
+     #    node node_modules/mocha/bin/mocha --recursive t
   deploy:
     needs: [test]
    # if: github.ref == 'refs/heads/main' && github.event_name == 'push'
