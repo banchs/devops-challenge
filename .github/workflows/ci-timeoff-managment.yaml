@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: |
-         sudo apt update -y && sudo apt install sqlite3 -y
+         sudo apt update -y && sudo apt upgrade -y && sudo apt install sqlite3 -y
       - name: Clone Repo Node.js ${{ matrix.node-version }}
         run: |
          git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git timeoff-management
@@ -45,6 +45,7 @@ jobs:
         run: |
          cd  timeoff-management
          rm -rf .npmrc
+         sudo apt update -y && sudo apt upgrade -y && sudo apt install sqlite3 -y
          npm install
 
      # - name:  Install ChromeDriver
