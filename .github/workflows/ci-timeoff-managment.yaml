@@ -3,13 +3,13 @@ on:
   push:
     branches:
       - main
-   # paths:
-   #   - 'k8s/**'
+    paths:
+      - 'k8s/**'
   pull_request:
     branches:
       - main
-   # paths:
-   #   - 'k8s/**'
+    paths:
+      - 'k8s/**'
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -21,9 +21,9 @@ jobs:
       - uses: actions/checkout@v3
       - name: Clone Project && Build the Docker image
         run: |
-          git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management       
-          cd  $PWD/timeoff-management 
-          sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile 
+          git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management
+          cd  $PWD/timeoff-management
+          sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile
           docker build --no-cache --progress=plain --tag demo-timeoff:latest .
 
   deploy:
@@ -60,9 +60,9 @@ jobs:
           ECR_REPOSITORY: demo-timeoff
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management       
-          cd  $PWD/timeoff-management 
-          sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile 
+          git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management
+          cd  $PWD/timeoff-management
+          sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
