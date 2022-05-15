@@ -1,0 +1,3 @@
+bucket = "gbanchs-tf-states"
+region = "us-east-1"
+key    = "devops-gorilla"

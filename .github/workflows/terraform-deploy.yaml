@@ -1,0 +1,160 @@
+name: 'infrastructure'
+
+on:
+  # Trigger the workflow on push or pull request,
+  # but only for the main branch and the specified folder
+  push:
+    branches:
+      - main
+    paths:
+      - 'infrastructure/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'infrastructure/**'
+
+jobs:
+  # Job to create injectable configuration for nested jobs
+  loadEnvs:
+    name: 'Loading envs and configurations'
+    runs-on: ubuntu-latest
+    env:
+      module_name: "infrastructure"
+    strategy:
+      fail-fast: true
+    outputs:
+      env: ${{ steps.set-envs.outputs.matrix_envs }}
+      module_name: "${{ env.module_name }}"
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # Create a JSON output to be used as a matrix to determine on which envs run the action
+    - id: set-envs
+      name: identify module envs
+      run: |
+        cd ${{ env.module_name }}
+        envs=$(ls -d *)
+        module_envs=$(for i in $envs; do echo $i; done | jq -R . | jq -s -c .)
+        echo "::set-output name=matrix_envs::${module_envs}"
+
+  terraformplan:
+    name: 'Terraform Plan'
+    runs-on: ubuntu-latest
+    needs: loadEnvs
+    strategy:
+      fail-fast: false
+      matrix:
+        env: "${{fromJSON(needs.loadEnvs.outputs.env)}}"
+    environment:
+      name: "${{ matrix.env }}.plan"
+    env:
+      module_name: ${{ needs.loadEnvs.outputs.module_name }}
+      env: ${{ matrix.env }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: "${{ env.module_name }}/${{ matrix.env }}"
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # Configure AWS credentials
+    - name: Setup AWS Credentials
+      uses: aws-actions/configure-aws-credentials@master
+      with:
+        aws-region: us-east-1
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        role-external-id: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
+        role-duration-seconds: 1200
+        role-session-name: "tf-${{ github.actor }}"
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.0.9
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      id: fmt
+      run: terraform fmt -recursive -check
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      id: init
+      run: |
+        terraform init -backend-config=backend
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate
+
+    - name: Terraform Plan
+      id: plan
+      env:
+        TF_VAR_AWS_ROLE_TO_ASSUME:  ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        TF_VAR_AWS_ROLE_EXTERNAL_ID: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
+        TF_VAR_AWS_ROLE_SESSION_NAME: "tf-${{ github.actor }}"
+
+      run: terraform plan -parallelism=100
+
+  terraformapply:
+    name: 'Terraform apply'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    needs: loadEnvs
+    strategy:
+      matrix:
+        env: "${{fromJSON(needs.loadEnvs.outputs.env)}}"
+    environment:
+      name: "${{ matrix.env }}.apply"
+    env:
+      module_name: ${{ needs.loadEnvs.outputs.module_name }}
+      env: ${{ matrix.env }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: "${{ env.module_name }}/${{ matrix.env }}"
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # Configure AWS credentials
+    - name: Setup AWS Credentials
+      uses: aws-actions/configure-aws-credentials@master
+      with:
+        aws-region: us-east-1
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        role-external-id: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
+        role-duration-seconds: 1200
+        role-session-name: "tf-${{ github.actor }}"
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.0.9
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check -recursive
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      id: init
+      run: |
+        terraform init -backend-config=backend
+
+       # On push to main branch, build or change infrastructure according to Terraform configuration files
+    - name: Terraform Apply
+      env:
+        TF_VAR_AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        TF_VAR_AWS_ROLE_EXTERNAL_ID: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
+        TF_VAR_AWS_ROLE_SESSION_NAME: ${{ github.actor }}
+      run: terraform apply #-auto-approve
