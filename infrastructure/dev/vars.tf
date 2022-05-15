@@ -2,7 +2,7 @@
 variable "env" {
   description = "AWS Environment"
   type        = string
-  default     = ""
+  default     = "dev"
 }
 
 variable "region" {
