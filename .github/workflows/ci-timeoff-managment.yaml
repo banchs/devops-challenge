@@ -17,7 +17,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: k8s/dev
+       # working-directory: k8s/dev
     strategy:
       matrix:
         node-version: [6.x,8.x,10.x,12.x,13.x, 14.x]
