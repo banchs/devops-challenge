@@ -20,44 +20,44 @@ jobs:
         working-directory: k8s/dev
     strategy:
       matrix:
-        node-version: [10.x, 13.x, 14.x]
+        node-version: [6.x,8.x,10.x,12.x,13.x, 14.x]
         experimental: [true]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
     env:
-      USE_CHROME: 1        
+      USE_CHROME: 1
     steps:
       - uses: actions/checkout@v3
       - run: |
-         sudo apt update -y && sudo apt install sqlite3 -y        
-      - name: Clone Repo Node.js ${{ matrix.node-version }}     
+         sudo apt update -y && sudo apt install sqlite3 -y
+      - name: Clone Repo Node.js ${{ matrix.node-version }}
         run: |
          git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git timeoff-management
          cd timeoff-management
-         sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile 
+         rm -rf .npm
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      #    cache: 'npm'
+          cache: 'npm'
       #    cache-dependency-path: timeoff-management/package-lock.json
-    
-      - name: Install Node.js ${{ matrix.node-version }}     
-        run: |     
-         cd  $PWD/timeoff-management    
-         sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile       
+
+      - name: Install Node.js ${{ matrix.node-version }}
+        run: |
+         cd  $PWD/timeoff-management
+         rm -rf .npmrc
          #docker build --no-cache --progress=plain --tag demo-timeoff:latest .
          npm install --omit=dev
-             
-      - name:  Install ChromeDriver 
-        run: | 
-         cd  $PWD/timeoff-management  
+
+      - name:  Install ChromeDriver
+        run: |
+         cd  $PWD/timeoff-management
          npm ci
          npm audit fix --force
-         wget https://chromedriver.storage.googleapis.com/94.0.4606.61/chromedriver_linux64.zip 
+         wget https://chromedriver.storage.googleapis.com/94.0.4606.61/chromedriver_linux64.zip
          cd bin; unzip ../chromedriver_linux64.zip; cd ../
-         sudo mv chromedriver /usr/bin/chromedriver 
-         sudo chown root:root /usr/bin/chromedriver 
-         sudo chmod +x /usr/bin/chromedriver 
+         sudo mv chromedriver /usr/bin/chromedriver
+         sudo chown root:root /usr/bin/chromedriver
+         sudo chmod +x /usr/bin/chromedriver
          node bin/wwww > /dev/null 2>&1 &
          node node_modules/mocha/bin/mocha --recursive t
   deploy:
@@ -94,9 +94,9 @@ jobs:
           ECR_REPOSITORY: demo-timeoff
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management       
-          cd  $PWD/timeoff-management 
-          sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile 
+          git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management
+          cd  $PWD/timeoff-management
+          sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
