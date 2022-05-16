@@ -14,11 +14,11 @@ module "vpc" {
   enable_dns_support   = true
 
   public_subnet_tags = {
-    "Name"                   = "public-subnet-devops-challenge",
+    "Name"                   = "public-subnet-devops-challenge-${var.env}",
     "kubernetes.io/role/elb" = "1"
   }
   private_subnet_tags = {
-    "Name"                            = "private-subnet-devops-challenge",
+    "Name"                            = "private-subnet-devops-challenge-${var.env}",
     "kubernetes.io/role/internal-elb" = "1"
   }
 }
@@ -36,9 +36,11 @@ resource "aws_security_group_rule" "alb" {
 
 
 module "eks" {
-  source          = "github.com/banchs/tf-mod-eks?ref=1.0.0"
+  source          = "github.com/banchs/tf-mod-eks?ref=1.0.1"
+  env             = var.env
   cluster_name    = "demo-${var.env}"
-  cluster_version = "1.21"
+  cluster_version = var.cluster_version
+  additional_sg   = aws_security_group.nodes.id
   vpc_config = {
     vpc_id          = module.vpc.vpc_id
     vpc_subnets_ids = concat(module.vpc.private_subnets, module.vpc.public_subnets)
@@ -64,7 +66,7 @@ module "eks" {
 
 locals {
   ecr_registry_name = [
-  "demo-timeoff"]
+  "demo-timeoff-${var.env}"]
 }
 
 resource "aws_ecr_repository" "microservices" {
@@ -100,7 +102,7 @@ resource "aws_security_group" "web" {
   }
 
   tags = {
-    Name        = "web-${var.name}",
+    Name        = "web-${var.name}-${var.env}",
     Environment = var.env
   }
 }
@@ -113,7 +115,7 @@ resource "kubernetes_ingress_v1" "nodesource_ingress" {
     name      = "ingress-demo-devops-${var.env}"
     namespace = "default"
     annotations = {
-      "alb.ingress.kubernetes.io/healthcheck-path"     = "/login"
+      #"alb.ingress.kubernetes.io/healthcheck-path"     = "/login"
       "alb.ingress.kubernetes.io/load-balancer-name"   = "ingress-demo-devops-${var.env}"
       "alb.ingress.kubernetes.io/name"                 = "ingress-demo-devops-${var.env}"
       "alb.ingress.kubernetes.io/scheme"               = "internet-facing"
@@ -166,7 +168,7 @@ resource "aws_route53_record" "www" {
 
   alias {
     name                   = "dualstack.${data.aws_lb.ingress.dns_name}"
-    zone_id                = data.aws_route53_zone.selected.zone_id
+    zone_id                = data.aws_lb.ingress.zone_id
     evaluate_target_health = true
   }
 }
@@ -193,7 +195,7 @@ resource "aws_security_group" "nodes" {
   }
 
   tags = {
-    Name        = "web-${var.name}",
+    Name        = "nodes-${var.name}-${var.env}",
     Environment = var.env
   }
 }
@@ -226,7 +228,7 @@ resource "aws_security_group" "rds" {
 }
 
 module "rds" {
-  source               = "github.com/banchs/tf-mod-db//rds?ref=1.0.0"
+  source               = "github.com/banchs/tf-mod-db//rds?ref=1.0.1"
   name                 = var.name
   env                  = var.env
   tags                 = var.tags
@@ -235,6 +237,7 @@ module "rds" {
   private_subnets_cidr = module.vpc.vpc_cidr_block
   kms_key_id           = module.kms.kms_arn
   security_groups_id   = aws_security_group.rds.id
+  region               = var.region
 }
 
 module "kms" {
