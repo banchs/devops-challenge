@@ -11,12 +11,42 @@ on:
     paths:
       - 'k8s/**'
 jobs:
+  # Job to create injectable configuration for nested jobs
+  loadEnvs:
+    name: 'Loading envs and configurations'
+    runs-on: ubuntu-latest
+    env:
+      module_name: "k8s"
+    strategy:
+      fail-fast: true
+    outputs:
+      env: ${{ steps.set-envs.outputs.matrix_envs }}
+      module_name: "${{ env.module_name }}"
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    # Create a JSON output to be used as a matrix to determine on which envs run the action
+    - id: set-envs
+      name: identify module envs
+      run: |
+        cd ${{ env.module_name }}
+        envs=$( find . -maxdepth 1 -type d -and -not -name 'main' | cut -c 3-)
+        module_envs=$(for i in $envs; do echo $i; done | jq -R . | jq -s -c .)
+        echo "::set-output name=matrix_envs::${module_envs}"
   test:
     runs-on: ubuntu-latest
+    needs: loadEnvs
+    strategy:
+      fail-fast: false
+      matrix:
+        env: "${{fromJSON(needs.loadEnvs.outputs.env)}}"
     defaults:
       run:
         shell: bash
-        working-directory: k8s/dev
+        working-directory: k8s/${{ matrix.env }}
+    environment:
+      name: "${{ matrix.env }}"
     steps:
       - uses: actions/checkout@v3
       - name: Clone Project && Build the Docker image
@@ -24,16 +54,22 @@ jobs:
           git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management
           cd  $PWD/timeoff-management
           sed -i  '/^RUN npm install.*/i RUN rm -rf .npmrc' Dockerfile
-          docker build --no-cache --progress=plain --tag demo-timeoff:latest .
+          docker build --progress=plain --tag demo-timeoff-${{ matrix.env }}:latest .
 
   deploy:
-    needs: [test]
+    needs: [test,loadEnvs]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        env: "${{fromJSON(needs.loadEnvs.outputs.env)}}"
     defaults:
       run:
         shell: bash
-        working-directory: k8s/dev
+        working-directory: k8s/${{ matrix.env }}
+    environment:
+      name: "${{ matrix.env }}"
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -57,7 +93,7 @@ jobs:
         id: build
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: demo-timeoff
+          ECR_REPOSITORY: demo-timeoff-${{ matrix.env }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
           git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff-management-application.git $PWD/timeoff-management
@@ -69,9 +105,9 @@ jobs:
       - name: EKS Auth
         id: set-eks-auth
         run: |
-          token=$(aws eks get-token --cluster-name demo-dev --region us-east-1 | jq -r .status.token)
-          host=$(aws eks describe-cluster --name demo-dev | jq -r .cluster.endpoint | cut -c 9- )
-          cert=$(aws eks describe-cluster --name demo-dev | jq -r .cluster.certificateAuthority.data)
+          token=$(aws eks get-token --cluster-name demo-${{ matrix.env }} --region us-east-1 | jq -r .status.token)
+          host=$(aws eks describe-cluster --name demo-${{ matrix.env }} | jq -r .cluster.endpoint | cut -c 9- )
+          cert=$(aws eks describe-cluster --name demo-${{ matrix.env }} | jq -r .cluster.certificateAuthority.data)
           echo "::add-mask::$token"
           echo "::add-mask::$host"
           echo "::add-mask::$cert"
@@ -94,5 +130,5 @@ jobs:
         with:
           args: apply
             --namespace=default
-            -f k8s/dev/service.yml
-            -f k8s/dev/deployment.yml
+            -f k8s/${{ matrix.env }}/service.yml
+            -f k8s/${{ matrix.env }}/deployment.yml
