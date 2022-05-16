@@ -138,6 +138,17 @@ For this you will need to create a ci/ci user in your AWS account and a new role
 1. Create a IAM user (ci-githubactions)
 2. Create a new Role: add the policies to deploy and create resources on AWS permissions (the more limited).
 
+Set the secrets on Github Actions Secrets in the repository or across Organization:
+
+Ref: https://github.com/Azure/actions-workflow-samples/blob/master/assets/create-secrets-for-GitHub-workflows.md
+
+```
+          secret = AWS_ACCESS_KEY = user ci-githubactions secret
+          secret = AWS_SECRET_KEY =  user ci-githubactions secret
+          secret = AWS_ROLE_TO_ASSUME =  role arn create in the previeous step
+          secret = AWS_ROLE_EXTERNAL_ID = an External Id for the assume Role
+```
+
 ### Folder Content
 
 #### .github
@@ -208,13 +219,15 @@ echo "my_secret_manager_string_value" | base64 -d
 
 ```
 kubectl create secret generic topsecrets --from-file=app/config
+
 ```
 
+## Web App Url:
+```
+prod: https://prod-devops-challenge.gbanchs.com/
+dev:  https://dev-devops-challenge.gbanchs.com/
 
-Web App Url: https://prod-devops-challenge.gbanchs.com/
-             https://dev-devops-challenge.gbanchs.com/
-
-
+```
 
 
 
