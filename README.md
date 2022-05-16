@@ -8,7 +8,7 @@ in AWS Cloud.
 - dev
 - prod
 
-## Folder structure & content
+## Folder Structure & Global Content
 ```
 ├── LICENSE
 ├── README.md
@@ -64,11 +64,13 @@ And those files must be change by environment:
 ```
 You need to configure the terraform backend using S3 bucket for the states:
 
-Change the varieables on backend file to use your bucket and your state location
+Change the variables on backend file to use your bucket and your state location
 
+```
 bucket = "my-bucket-states"
 region = "us-east-1"
 key = "myapp-env"
+```
 
 ## Resources to be Deployed
 
@@ -139,8 +141,34 @@ git clone --depth 1 --branch 1.1.1 https://github.com/timeoff-management/timeoff
 
 This folder contains the terraform code to the deploy the infrastructure for this Demo
 
-inside of infrastructure folder you
+To add more environments you can clone the folder from the previous folder created:
 
+for example clone prod folder and rename it with your new environment prefix stg, qa, test and so on...
+
+```
+├── infrastructure
+│   ├── backend.tf
+│   ├── data.tf
+│   ├── dev
+│   │   ├── backend
+│   │   ├── data.tf -> ../data.tf
+│   │   ├── main.tf -> ../main.tf
+│   │   ├── outputs.tf -> ../outputs.tf
+│   │   ├── providers.tf -> ../providers.tf
+│   │   ├── vars.tf
+│   │   └── vars.tfvars
+│   ├── main.tf
+│   ├── outputs.tf
+│   ├── prod
+│   │   ├── backend
+│   │   ├── data.tf -> ../data.tf
+│   │   ├── main.tf -> ../main.tf
+│   │   ├── outputs.tf -> ../outputs.tf
+│   │   ├── providers.tf -> ../providers.tf
+│   │   ├── vars.tf
+│   │   └── vars.tfvars
+│   ├── providers.tf
+```
 #### k8s
 
 This folder contains the folder dev and prod to deploy to EKS the application
@@ -151,7 +179,7 @@ This folder contains the folder dev and prod to deploy to EKS the application
 │   ├── deployment.yml
 │   ├── secret.yml
 │   ├── service.yml
-│   └── topsecrets.yaml
+│   └── topsecrets.yaml (this must be create in with the following command)
 │   └── prod
 │   ├── deployment.yml
 │   ├── secret.yml
@@ -171,16 +199,21 @@ echo "my_secret_manager_string_value" | base64 -d
 
 3. Put the config in your file app/config/db.json
 
-kubectl create secret generic topsecrets --from-file=app/config
-
 ```
-Web Application EKS AWS
+kubectl create secret generic topsecrets --from-file=app/config
+```
 
-https://prod-devops-challenge.gbanchs.com/
+
+Web App Url: https://prod-devops-challenge.gbanchs.com/
+             https://dev-devops-challenge.gbanchs.com/
 
 
-## Reference Architecture AWS Network
 
+
+
+
+
+
+## Web Application Architecture on AWS
 
 ![image](https://gbanchs.com/devops/devops-challengeV2.png)
-```
