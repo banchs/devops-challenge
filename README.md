@@ -9,7 +9,7 @@ in AWS Cloud.
 - prod
 
 ## Folder structure & content
-
+```
 ├── LICENSE
 ├── README.md
 ├── app
@@ -48,20 +48,20 @@ in AWS Cloud.
 │   ├── deployment.yml
 │   ├── service.yml
 │   └── topsecrets.yaml
-
+```
 Note: The main files are in the main path of each environment folder in order to use the same files to deploy the same way on each environment:
-
+```
 │   │   ├── data.tf -> ../data.tf
 │   │   ├── main.tf -> ../main.tf
 │   │   ├── outputs.tf -> ../outputs.tf
 │   │   ├── providers.tf -> ../providers.tf
-
+```
 And those files must be change by environment:
-
+```
 │   │   ├── backend
 │   │   ├── vars.tf
 │   │   └── vars.tfvars
-
+```
 You need to configure the terraform backend using S3 bucket for the states:
 
 Change the varieables on backend file to use your bucket and your state location
@@ -110,6 +110,7 @@ The following steps will be executed:
 
 You can set the credentials in the credentilas step on the workflows in this block:
 
+```
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -120,7 +121,7 @@ You can set the credentials in the credentilas step on the workflows in this blo
           role-external-id: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
           role-duration-seconds: 1200
           role-session-name: "ci-${{ github.actor }}"
-
+```
 For this you will need to create a ci/ci user in your AWS account and a new role that will be assume be the user created:
 
 1. Create a IAM user (ci-githubactions)
@@ -143,6 +144,8 @@ inside of infrastructure folder you
 #### k8s
 
 This folder contains the folder dev and prod to deploy to EKS the application
+
+```
 ├── k8s
 │   └── dev
 │   ├── deployment.yml
@@ -154,6 +157,7 @@ This folder contains the folder dev and prod to deploy to EKS the application
 │   ├── secret.yml
 │   ├── service.yml
 │   └── topsecrets.yaml (this must be create in with the following command)
+```
 
 # Set Database Credentials
 
