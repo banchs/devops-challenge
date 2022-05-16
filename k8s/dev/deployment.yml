@@ -9,7 +9,6 @@ spec:
   selector:
     matchLabels:
       app: timeoff-managment
-      backend: tier
   template:
     metadata:
       labels:
