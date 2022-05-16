@@ -95,7 +95,16 @@ key = "myapp-env"
 - AWS RDS Aurora MySql and Replica
 - Secret in Secret Manager With DB credentials
 
-### CI/CD
+### CI/CD Using Github Actions
+
+We are having 2 CD/CI workflows; one to deploy infrastructure with terraform code, and another to build, test, and deploy the Node App to kubernetes on EKS.
+
+```
+.github
+└── workflows
+    ├── ci-timeoff-managment.yaml
+    └── terraform-deploy.yaml
+```
 
 The Github Actions pipeline will be triggered On the following escenarios:
 
@@ -177,14 +186,12 @@ This folder contains the folder dev and prod to deploy to EKS the application
 ├── k8s
 │   └── dev
 │   ├── deployment.yml
-│   ├── secret.yml
 │   ├── service.yml
-│   └── topsecrets.yaml (this must be create in with the following command)
+│   └── topsecrets.yaml (kubectl create secret generic topsecrets --from-file=app/config)
 │   └── prod
 │   ├── deployment.yml
-│   ├── secret.yml
 │   ├── service.yml
-│   └── topsecrets.yaml (this must be create in with the following command)
+│   └── topsecrets.yaml (kubectl create secret generic topsecrets --from-file=app/config)
 ```
 
 # Set Database Credentials
