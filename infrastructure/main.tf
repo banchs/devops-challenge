@@ -36,8 +36,7 @@ resource "aws_security_group_rule" "alb" {
 
 
 module "eks" {
-  #source          = "github.com/banchs/tf-mod-eks?ref=1.0.1"
-  source          = "/home/gbanchs/projects/terraform-modules/tf-mod-eks"
+  source          = "github.com/banchs/tf-mod-eks?ref=1.0.1"
   env             = var.env
   cluster_name    = "demo-${var.env}"
   cluster_version = var.cluster_version
@@ -229,8 +228,7 @@ resource "aws_security_group" "rds" {
 }
 
 module "rds" {
-  #source               = "github.com/banchs/tf-mod-db//rds?ref=1.0.1"
-  source               = "/home/gbanchs/projects/terraform-modules/tf-mod-db//rds"
+  source               = "github.com/banchs/tf-mod-db//rds?ref=1.0.1"
   name                 = var.name
   env                  = var.env
   tags                 = var.tags
