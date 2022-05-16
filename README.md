@@ -219,6 +219,7 @@ echo "my_secret_manager_string_value" | base64 -d
 
 ```
 kubectl create secret generic topsecrets --from-file=app/config
+
 ```
 
 ## Web App Url:
