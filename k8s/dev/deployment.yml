@@ -5,7 +5,7 @@ metadata:
     app: timeoff-managment
   name: timeoff-managment
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: timeoff-managment
