@@ -106,9 +106,9 @@ jobs:
 
   terraformapply:
     name: 'Terraform apply'
-    if:  startsWith(github.head_ref, 'releases/')
     runs-on: ubuntu-latest
     needs: loadEnvs
+    if:  startsWith(github.head_ref, 'releases/')
     strategy:
       matrix:
         env: "${{fromJSON(needs.loadEnvs.outputs.env)}}"
